@@ -4,6 +4,7 @@ import string
 
 import sys
 from locust import TaskSet, task, HttpLocust, main
+from locust.events import quitting
 
 
 # run 'locust --host=http://{server url:port}' in terminal, and go to http://localhost:8089
@@ -14,15 +15,7 @@ class AutoScalingTasks(TaskSet):
     def reverse_strings(self):
         # generate a random 124 character string and POST it
         original = ''.join(random.choices(string.ascii_uppercase, k=124))
-        with self.client.post('/reverse', json={'string': original},
-                              catch_response=True) as response:
-            try:
-                original_reversed = json.loads(response.text)['reversed']
-                if original[::-1] != original_reversed:
-                    response.failure('reversed string')
-            except:
-                e = sys.exc_info()[0]
-                response.failure(str(e))
+        self.client.post('/reverse', json={'string': original})
 
 
 class MeasureAutoScaling(HttpLocust):
